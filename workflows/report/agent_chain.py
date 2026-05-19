@@ -1,7 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from config import MODEL_NAME, OPENAI_API_KEY, OPENAI_API_BASE_URL
 from tools.web_tools import fetch_web_content, parse_weekly_data
 

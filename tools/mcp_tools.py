@@ -7,7 +7,7 @@ from typing import Optional, List
 from langchain_core.tools import tool
 from config import (
     MCP_SERVER_COMMAND, MCP_SERVER_ARGS, MCP_SERVER_ENV,
-    MCP_SERVER_URL, MCP_AUTH_TYPE, MCP_USERNAME, MCP_PASSWORD, MCP_TOKEN
+    MCP_SERVER_URL
 )
 
 
@@ -54,7 +54,6 @@ class MCPClient:
             cmd = [self.server_command] + self.server_args
 
             env = os.environ.copy()
-            env.update(self.server_env)
 
             process = subprocess.Popen(
                 cmd,

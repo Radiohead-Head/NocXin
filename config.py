@@ -24,21 +24,21 @@ def parse_env_dict(value: str) -> Dict[str, str]:
         return {}
 
 
+# ===== LLM 配置 =====
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_API_BASE_URL = os.getenv("OPENAI_API_BASE_URL", "")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
 
-WEB_PAGE_URL = os.getenv("WEB_PAGE_URL", "https://example.com/weekly-data")
-
+# ===== MCP 服务配置 =====
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "")
-MCP_AUTH_TYPE = os.getenv("MCP_AUTH_TYPE", "basic")
-MCP_USERNAME = os.getenv("MCP_USERNAME", "")
-MCP_PASSWORD = os.getenv("MCP_PASSWORD", "")
-MCP_TOKEN = os.getenv("MCP_TOKEN", "")
-
 MCP_SERVER_COMMAND = os.getenv("MCP_SERVER_COMMAND", "")
 MCP_SERVER_ARGS = parse_env_list(os.getenv("MCP_SERVER_ARGS", ""))
 MCP_SERVER_ENV = parse_env_dict(os.getenv("MCP_SERVER_ENV", ""))
+
+# ===== 周报数据源 =====
+REPORT_URL = os.getenv("REPORT_URL", "https://example.com/weekly-data")
+REPORT_USER = os.getenv("REPORT_USER", "")
+REPORT_TOKEN = os.getenv("REPORT_TOKEN", "")
 
 REPORT_TEMPLATE = """## 周报总结
 

@@ -12,7 +12,7 @@
 ## 项目结构
 
 ```
-/home/langC/forxin
+/home/langC/NocXin
 ├── config.py                 # 应用配置
 ├── requirements.txt          # Python 依赖
 ├── main.py                   # 主入口
@@ -21,12 +21,19 @@
 ├── tools/
 │   ├── __init__.py
 │   ├── web_tools.py          # HTTP 网页抓取工具
-│   └── mcp_tools.py          # MCP 协议客户端工具
-└── chains/
+│   ├── mcp_tools.py          # MCP 协议客户端工具
+│   └── mcp_server.py         # 本地 MCP 服务器
+└── workflows/
     ├── __init__.py
-    ├── weekly_report.py      # 简单 Chain 模式
-    ├── weekly_report_agent.py # Agent 模式
-    └── mcp_report_agent.py    # MCP Agent 模式
+    └── report/               # 周报功能模块
+        ├── __init__.py
+        ├── chain.py          # 简单 Chain 模式
+        ├── agent_chain.py    # Agent 模式
+        └── mcp_chain.py      # MCP 模式
+
+# 未来扩展示例：
+# workflows/analyze/         # 数据分析模块
+# workflows/summary/         # 会议总结模块
 ```
 
 ## 安装
@@ -46,85 +53,74 @@ cp .env.example .env
 编辑 `.env` 文件：
 
 ```env
-# OpenAI API 配置
+# ===== LLM 配置 =====
 OPENAI_API_KEY=your_api_key_here
+OPENAI_API_BASE_URL=https://api.openai.com/v1
 MODEL_NAME=gpt-4o-mini
 
-# 默认网页 URL
-WEB_PAGE_URL=https://example.com/weekly-data
+# ===== MCP 服务（可选）=====
+MCP_SERVER_COMMAND=python
+MCP_SERVER_ARGS=["tools/mcp_server.py"]
 
-# MCP 服务器配置（HTTP 模式）
-MCP_SERVER_URL=http://your-mcp-server:port
-MCP_AUTH_TYPE=basic
-MCP_USERNAME=your_username
-MCP_PASSWORD=your_password
+# ===== 周报数据源 =====
+REPORT_URL=https://example.com/weekly-data
+REPORT_USER=""
+REPORT_TOKEN=""
 ```
 
 ## 使用方法
 
-### 1. 简单模式（直接 HTTP 请求）
+### 生成周报
 
 ```bash
-python cli.py simple --url "https://example.com/data"
+# 生成周报（使用 .env 中配置的 REPORT_URL）
+python main.py report
+
+# 输出到文件
+python main.py report --output weekly.md
 ```
 
-### 2. Agent 模式（LangChain Agent 推理）
+### 工作原理
+
+程序会**自动选择最佳数据源**：
+
+1. **优先使用 MCP 协议**（如果配置了 `MCP_SERVER_COMMAND`）
+   - 支持多种认证方式（Basic Auth、Token、Cookie、表单登录）
+   - 适合需要认证的内部系统（如 Jira、Confluence）
+
+2. **回退到 HTTP 直接请求**
+   - 无需额外配置
+   - 适合公开网页
+
+### 帮助信息
 
 ```bash
-python cli.py agent --url "https://example.com/data"
+# 查看所有可用命令
+python main.py --help
+
+# 查看周报命令帮助
+python main.py report --help
 ```
 
-### 3. MCP 模式（通过 MCP 协议获取数据）
+### 扩展示例
+
+未来可以添加更多功能模块：
 
 ```bash
-python cli.py mcp --url "https://example.com/data"
+# 数据分析（示例）
+python main.py analyze data
+
+# 会议总结（示例）
+python main.py summary meeting
 ```
 
-### 输出到文件
+## 配置说明
 
-```bash
-python cli.py simple --url "https://example.com/data" --output weekly.md
-python cli.py agent --url "https://example.com/data" --output weekly.md
-python cli.py mcp --url "https://example.com/data" --output weekly.md
-```
-
-### 查看版本
-
-```bash
-python cli.py version
-```
-
-## 模式对比
-
-| 模式 | 命令 | 数据获取方式 | 适用场景 |
-|------|------|-------------|---------|
-| Simple | `simple` | 直接 requests 请求 | 简单网页，无认证需求 |
-| Agent | `agent` | LangChain ReAct Agent | 需要多步骤推理 |
-| MCP | `mcp` | MCP 协议 HTTP 请求 | 需要认证的网页数据源 |
-
-## MCP 配置说明
-
-### HTTP 模式
-
-设置 `MCP_SERVER_URL` 环境变量，工具将发送 HTTP POST 请求：
-
-```env
-MCP_SERVER_URL=http://your-mcp-server:port
-MCP_AUTH_TYPE=basic
-MCP_USERNAME=your_username
-MCP_PASSWORD=your_password
-```
-
-支持的认证类型：
-- `basic`: 用户名密码认证（默认）
-- `bearer`: Token 认证
-
-```env
-MCP_AUTH_TYPE=bearer
-MCP_TOKEN=your_bearer_token
-```
-
-### MCP 工具调用
+| 配置块 | 说明 | 必填 |
+|--------|------|------|
+| **LLM 配置** | OpenAI API 密钥和模型 | ✅ |
+| **周报数据源** | URL + 用户名 + Token | ✅ |
+| **MCP 服务** | MCP 服务器启动命令 | 可选 |
 
 MCP 模式下会调用两个工具：
 - `fetch_content`: 获取网页全文内容
@@ -143,11 +139,24 @@ MCP 模式下会调用两个工具：
 - `click>=8.1.0` - CLI 框架
 - `mcp>=1.0.0` - MCP 协议支持
 
+## 依赖管理
+
+```bash
+# 检查可更新的依赖（只查看）
+python3 scripts/update_deps.py
+
+# 更新到最新版本
+python3 scripts/update_deps.py --write
+
+# 安装依赖
+pip install -r requirements.txt
+```
+
 ## 常见问题
 
 ### Q: MCP 模式下工具名称不对怎么办？
 
-修改 [tools/mcp_tools.py](file:///home/langC/forxin/tools/mcp_tools.py) 中的 `call_mcp_tool` 调用：
+修改 [tools/mcp_tools.py](file:///home/langC/NocXin/tools/mcp_tools.py) 中的 `call_mcp_tool` 调用：
 
 ```python
 # 将 "fetch_content" 改为你实际的 MCP 工具名称

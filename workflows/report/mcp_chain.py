@@ -3,7 +3,7 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchain_core.prompts import PromptTemplate
 from config import MODEL_NAME, OPENAI_API_KEY, OPENAI_API_BASE_URL
 from tools.mcp_tools import mcp_fetch_web_content, mcp_get_page_data
-from chains.weekly_report import generate_weekly_report
+from workflows.report.chain import generate_weekly_report
 
 
 llm = ChatOpenAI(
